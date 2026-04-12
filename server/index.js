@@ -1,14 +1,20 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 
 const app = express();
 
-app.use(cors());
+// CORS configuration
+app.use(cors({
+  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  credentials: true
+}));
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect("mongodb://localhost:27017/invoice-saas")
+const mongoURI = process.env.MONGODB_URI || "mongodb://localhost:27017/invoice-saas";
+mongoose.connect(mongoURI)
 .then(() => console.log("MongoDB connected"))
 .catch(err => {
   console.error("MongoDB connection error:", err.message);

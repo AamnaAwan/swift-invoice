@@ -1,0 +1,19 @@
+[build]
+  command = "cd client && npm install && npm run build"
+  publish = "client/dist"
+
+[dev]
+  command = "npm run dev:all"
+  port = 3000
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  VITE_API_URL = "https://your-backend-url.com"
+
+[context.deploy-preview.environment]
+  VITE_API_URL = "https://your-backend-url.com"
+

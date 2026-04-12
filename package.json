@@ -1,0 +1,17 @@
+{
+  "name": "invoice-saas",
+  "version": "1.0.0",
+  "description": "Invoice SaaS Application",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run start",
+    "build": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "preview": "cd client && npm run preview"
+  },
+  "keywords": ["invoice", "saas", "invoicing"],
+  "author": "",
+  "license": "ISC"
+}
