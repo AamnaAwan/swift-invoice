@@ -13,7 +13,7 @@ app.set("trust proxy", 1);
 const normalizeOrigin = (origin) => origin?.replace(/\/+$|\s+/g, "") || "";
 const allowedOrigins = [
   normalizeOrigin(process.env.CLIENT_URL || "http://localhost:5173"),
-  normalizeOrigin("https://swiftt-invoice.netlify.app")
+  normalizeOrigin("https://swift-invoiice.netlify.app")
 ];
 
 const corsOptions = {

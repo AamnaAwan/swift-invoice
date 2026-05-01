@@ -56,7 +56,7 @@ The Express server **cannot** be hosted on Netlify directly. Choose one of these
 4. Netlify will auto-detect the build settings from netlify.toml
 5. Set environment variables:
    - Go to Site settings > Build & deploy > Environment
-   - Add: `VITE_API_URL` = `https://your-backend-url.com` (from Step 1)
+   - Add: `VITE_API_URL` = `https://us-central1-swift-invoi.cloudfunctions.net/api/invoices` (from Step 1)
 6. Click "Deploy"
 
 ## Environment Variables Required
@@ -74,7 +74,7 @@ PORT=5000
 ### Frontend (Set in Netlify UI)
 
 ```
-VITE_API_URL=https://your-backend-url.com
+VITE_API_URL=https://us-central1-swift-invoi.cloudfunctions.net/api/invoices
 ```
 
 ## Testing Deployment

@@ -1,38 +1,42 @@
 const express = require("express");
 const router = express.Router();
-const mongoose = require("mongoose");
-const Invoice = require("../models/Invoice");
+const { db } = require("../firebaseAdmin");
 const auth = require("../middleware/auth");
 
-// In-memory storage for testing when MongoDB is not available
-let inMemoryInvoices = [];
-let invoiceIdCounter = 1;
+const requireDb = (res) => {
+  if (!db) {
+    res.status(503).json({ msg: "Firebase backend is not configured" });
+    return false;
+  }
+  return true;
+};
 
-// Helper function to check if MongoDB is connected
-const isMongoConnected = () => mongoose.connection.readyState === 1;
+const serializeInvoice = (id, data) => ({
+  id,
+  clientName: data.clientName || "",
+  description: data.description || "",
+  amount: Number(data.amount || 0),
+  status: data.status || "unpaid",
+  userId: data.userId,
+  createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : data.createdAt,
+  updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate().toISOString() : data.updatedAt,
+  date: data.date?.toDate ? data.date.toDate().toISOString() : data.date,
+});
 
 // CREATE
 router.post("/", auth, async (req, res) => {
+  if (!requireDb(res)) return;
+
   try {
-    let invoice;
-
-    if (isMongoConnected()) {
-      invoice = await Invoice.create({
-        ...req.body,
-        userId: req.user,
-      });
-    } else {
-      // Fallback to in-memory storage
-      invoice = {
-        _id: invoiceIdCounter++,
-        ...req.body,
-        userId: req.user,
-        date: new Date()
-      };
-      inMemoryInvoices.push(invoice);
-    }
-
-    res.json(invoice);
+    const invoiceData = {
+      ...req.body,
+      userId: req.user,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      date: new Date(),
+    };
+    const invoiceRef = await db.collection("invoices").add(invoiceData);
+    res.json(serializeInvoice(invoiceRef.id, invoiceData));
   } catch (err) {
     console.error("Create invoice error:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
@@ -41,16 +45,11 @@ router.post("/", auth, async (req, res) => {
 
 // READ
 router.get("/", auth, async (req, res) => {
+  if (!requireDb(res)) return;
+
   try {
-    let invoices;
-
-    if (isMongoConnected()) {
-      invoices = await Invoice.find({ userId: req.user });
-    } else {
-      // Fallback to in-memory storage
-      invoices = inMemoryInvoices.filter(inv => inv.userId === req.user);
-    }
-
+    const snapshot = await db.collection("invoices").where("userId", "==", req.user).get();
+    const invoices = snapshot.docs.map(doc => serializeInvoice(doc.id, doc.data()));
     res.json(invoices);
   } catch (err) {
     console.error("Get invoices error:", err);
@@ -60,22 +59,22 @@ router.get("/", auth, async (req, res) => {
 
 // UPDATE
 router.put("/:id", auth, async (req, res) => {
-  try {
-    let updated;
+  if (!requireDb(res)) return;
 
-    if (isMongoConnected()) {
-      updated = await Invoice.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    } else {
-      // Fallback to in-memory storage
-      const index = inMemoryInvoices.findIndex(inv => inv._id.toString() === req.params.id);
-      if (index !== -1) {
-        inMemoryInvoices[index] = { ...inMemoryInvoices[index], ...req.body };
-        updated = inMemoryInvoices[index];
-      }
+  try {
+    const invoiceRef = db.collection("invoices").doc(req.params.id);
+    const invoiceDoc = await invoiceRef.get();
+    if (!invoiceDoc.exists || invoiceDoc.data().userId !== req.user) {
+      return res.status(404).json({ msg: "Invoice not found" });
     }
 
-    if (!updated) return res.status(404).json({ msg: "Invoice not found" });
-    res.json(updated);
+    const updatedData = {
+      ...req.body,
+      updatedAt: new Date()
+    };
+    await invoiceRef.update(updatedData);
+    const updatedDoc = await invoiceRef.get();
+    res.json({ id: updatedDoc.id, ...updatedDoc.data() });
   } catch (err) {
     console.error("Update invoice error:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
@@ -84,22 +83,16 @@ router.put("/:id", auth, async (req, res) => {
 
 // DELETE
 router.delete("/:id", auth, async (req, res) => {
-  try {
-    let deleted = false;
+  if (!requireDb(res)) return;
 
-    if (isMongoConnected()) {
-      const result = await Invoice.findByIdAndDelete(req.params.id);
-      deleted = !!result;
-    } else {
-      // Fallback to in-memory storage
-      const index = inMemoryInvoices.findIndex(inv => inv._id.toString() === req.params.id);
-      if (index !== -1) {
-        inMemoryInvoices.splice(index, 1);
-        deleted = true;
-      }
+  try {
+    const invoiceRef = db.collection("invoices").doc(req.params.id);
+    const invoiceDoc = await invoiceRef.get();
+    if (!invoiceDoc.exists || invoiceDoc.data().userId !== req.user) {
+      return res.status(404).json({ msg: "Invoice not found" });
     }
 
-    if (!deleted) return res.status(404).json({ msg: "Invoice not found" });
+    await invoiceRef.delete();
     res.json({ msg: "Deleted" });
   } catch (err) {
     console.error("Delete invoice error:", err);
