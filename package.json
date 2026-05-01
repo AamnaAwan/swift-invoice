@@ -4,14 +4,22 @@
   "description": "Invoice SaaS Application",
   "type": "module",
   "scripts": {
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "cd client && npm run dev",
-    "dev:server": "cd server && npm run start",
+    "dev:server": "cd server && npm start",
     "build": "cd client && npm run build",
-    "build:server": "cd server && npm run build",
+    "start": "cd server && npm start",
     "preview": "cd client && npm run preview"
   },
-  "keywords": ["invoice", "saas", "invoicing"],
+  "keywords": [
+    "invoice",
+    "saas",
+    "invoicing"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^8.2.0"
+  }
 }

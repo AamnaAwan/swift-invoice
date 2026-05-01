@@ -7,7 +7,8 @@ A modern invoice management application built with React and Express.
 ### Prerequisites
 
 - Node.js 16+ installed
-- MongoDB instance running locally OR MongoDB Atlas account
+- Firebase project created with Authentication enabled
+- Firebase service account credentials available for the backend
 
 ### Local Development
 
@@ -23,7 +24,7 @@ A modern invoice management application built with React and Express.
    ```bash
    cd server
    cp .env.example .env
-   # Edit .env with your MongoDB URI and settings
+   # Edit .env with your Firebase service account credentials
    npm install
    npm start
    ```
@@ -32,12 +33,13 @@ A modern invoice management application built with React and Express.
 
    ```bash
    cd client
-   cp .env.local.example .env.local  # Optional, already has defaults
+   cp .env.example .env
+   # Edit .env with your Firebase web config values
    npm install
    npm run dev
    ```
 
-4. Open http://localhost:3000 in your browser
+4. Open http://localhost:5173 in your browser
 
 ## Deployment
 
@@ -69,7 +71,7 @@ A modern invoice management application built with React and Express.
 │
 ├── server/                # Express backend
 │   ├── routes/           # API routes
-│   ├── models/           # MongoDB models
+│   ├── models/           # Firestore models / data structures
 │   ├── middleware/       # Auth middleware
 │   └── index.js          # Server entry point
 │
@@ -79,9 +81,9 @@ A modern invoice management application built with React and Express.
 
 ## Features
 
-- 🔐 User Authentication (Register, Login, JWT)
+- 🔐 User Authentication (Firebase Auth)
 - 📄 Create, Read, Update, Delete invoices
-- 💾 MongoDB database
+- 💾 Firebase Firestore database
 - 🎨 Dark/Light theme support
 - 📱 Responsive design
 - 📊 Invoice filtering and sorting
@@ -95,13 +97,16 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md#troubleshooting)
 
 ### Local Development
 
-- **Port 3000 already in use**: Change port in `client/vite.config.js`
-- **MongoDB connection error**: Ensure MongoDB is running or update MONGODB_URI in `.env`
-- **API calls failing**: Check `VITE_API_URL` in client `.env.local`
+- **Port 5173 already in use**: Change port in `client/vite.config.js`
+- **Firebase auth or Firestore issue**: Ensure `client/.env` and `server/.env` are configured correctly.
+- **API calls failing**: Check `VITE_API_URL` in `client/.env`
 
 ## Environment Variables
 
-See `.env.example` files in root, client, and server directories.
+See `server/.env.example` and `client/.env.example` for the variables required by each side.
+
+- `server/.env.example` contains Firebase Admin service account settings and CORS origin.
+- `client/.env.example` contains Firebase web SDK config values and the backend API URL.
 
 ## License
 

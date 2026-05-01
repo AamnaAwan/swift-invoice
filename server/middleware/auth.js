@@ -1,6 +1,6 @@
-const jwt = require("jsonwebtoken");
+const { admin } = require("../firebaseAdmin");
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
   const authHeader = req.header("Authorization");
 
   if (!authHeader) return res.status(401).json({ msg: "No token" });
@@ -8,8 +8,8 @@ module.exports = (req, res, next) => {
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
 
   try {
-    const decoded = jwt.verify(token, "secretkey");
-    req.user = decoded.id;
+    const decoded = await admin.auth().verifyIdToken(token);
+    req.user = decoded.uid;
     next();
   } catch (err) {
     res.status(401).json({ msg: "Invalid token" });
